@@ -1,10 +1,12 @@
+import numpy as np
+
 from features_extractor.Features import *
 
 
 class FeaturesReducer:
 
     @staticmethod
-    def process_model_features(raw_features: dict) -> dict:
+    def process_model_features(raw_features: dict) -> np.array:
         """
         Gets a dict of all raw features and reduce them to the actual model features
         :param raw_features: dict of the raw features. Example:
@@ -21,14 +23,14 @@ class FeaturesReducer:
             model_feature2: ((raw_feature1, raw_feature2), min),
         }
 
-        model_features = {}
+        model_features = []
         for feature_name, feature_args in features_mapper.items():
             args = []
             for raw_feature in feature_args[0]:
                 args.append(raw_features[raw_feature])
-            model_features[feature_name] = feature_args[1](args)
+            model_features.append(feature_args[1](args))
 
-        return model_features
+        return np.array(model_features)
 
     @staticmethod
     def func1(args):
