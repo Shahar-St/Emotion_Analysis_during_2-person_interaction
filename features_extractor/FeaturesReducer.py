@@ -1,3 +1,6 @@
+from features_extractor.Features import *
+
+
 class FeaturesReducer:
 
     @staticmethod
@@ -14,8 +17,8 @@ class FeaturesReducer:
         """
 
         features_mapper = {
-            'modelFeature1': (('raw_feature1', 'raw_feature2', 'raw_feature3'), FeaturesReducer.func1),
-            'modelFeature2': (('raw_feature1', 'raw_feature2'), min),
+            nodel_feature1: ((raw_feature1, raw_feature2, raw_feature3), FeaturesReducer.func1),
+            nodel_feature2: ((raw_feature1, raw_feature2), min),
         }
 
         model_features = {}

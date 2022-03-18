@@ -1,3 +1,6 @@
+from features_extractor.Features import *
+
+
 class RawFeaturesExtractor:
 
     @staticmethod
