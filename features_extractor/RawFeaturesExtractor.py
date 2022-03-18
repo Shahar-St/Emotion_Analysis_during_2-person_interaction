@@ -1,5 +1,5 @@
 class RawFeaturesExtractor:
 
     @staticmethod
-    def extract_raw_features(excel_files_dir):
+    def extract_raw_features(csv_file_path):
         pass

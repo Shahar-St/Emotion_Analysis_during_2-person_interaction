@@ -7,14 +7,18 @@ from model.Model import Model
 
 def main():
     # Features
-    excel_files_dir = ''  # Todo csv or excel?
-    excel_files_path = os.path.join(os.getcwd(), excel_files_dir)
-    raw_features = RawFeaturesExtractor.extract_raw_features(excel_files_path)
-    model_Features = FeaturesReducer.process_model_features(raw_features)
+    csv_files_dir = ''  # Todo csv or excel?
+    csv_files_path = os.path.join(os.getcwd(), csv_files_dir)
+
+    model_train_data = []
+    for csv_file in os.listdir(csv_files_path):
+        raw_features = RawFeaturesExtractor.extract_raw_features(os.path.join(csv_files_path, csv_file))
+        model_Features = FeaturesReducer.process_model_features(raw_features)
+        model_train_data.append(model_Features)
 
     # Model
     model = Model()
-    model.train(model_Features)
+    model.train(model_train_data)
 
 
 if __name__ == '__main__':
