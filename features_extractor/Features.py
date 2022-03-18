@@ -4,5 +4,5 @@ raw_feature2 = 'raw_feature2'
 raw_feature3 = 'raw_feature3'
 
 #### Model Features ####
-nodel_feature1 = 'modelFeature1'
-nodel_feature2 = 'modelFeature2'
+model_feature1 = 'modelFeature1'
+model_feature2 = 'modelFeature2'
