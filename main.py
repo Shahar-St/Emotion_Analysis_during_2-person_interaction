@@ -1,16 +1,21 @@
-# This is a sample Python script.
+import os
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from features_extractor.FeaturesReducer import FeaturesReducer
+from features_extractor.RawFeaturesExtractor import RawFeaturesExtractor
+from model.Model import Model
 
 
-# Press the green button in the gutter to run the script.
+def main():
+    # Features
+    excel_files_dir = ''
+    excel_files_path = os.path.join(os.getcwd(), excel_files_dir)
+    raw_features = RawFeaturesExtractor.extract_raw_features(excel_files_path)
+    model_Features = FeaturesReducer.process_model_features(raw_features)
+
+    # Model
+    model = Model()
+    model.train(model_Features)
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()
