@@ -1,3 +1,5 @@
+import logging
+
 import joblib
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -51,17 +53,17 @@ class Model:
                     validation_predictions = clf.predict(X_val)
                     validation_score = (np.sum(validation_predictions == y_val) / y_val.size) * 100
                     params = [nun_of_trees, func, min_samples_split]
-                    print(f'Finished training with params: {params}, validation score: {validation_score}%')
+                    logging.info(f'Finished training with params: {params}, validation score: {validation_score}%')
                     if validation_score > best_validation_score:
                         best_params = params
                         best_validation_score = validation_score
-                        print(f'Found a higher validation score')
+                        logging.info(f'Found a higher validation score')
 
-        print(f'Training phase ended. Highest validation score: {best_validation_score}, params: {best_params}')
+        logging.info(f'Training phase ended. Highest validation score: {best_validation_score}, params: {best_params}')
 
         #### Test phase ####
         predictions = clf.predict(X_test)
         test_results = (np.sum(predictions == y_test) / y_test.size) * 100
         self.model = clf
-        print(f'Test results: {test_results}%')
+        logging.info(f'Test results: {test_results}%')
         joblib.dump(clf, output_file_path)
