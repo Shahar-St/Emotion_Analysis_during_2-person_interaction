@@ -8,8 +8,6 @@ from sklearn.model_selection import train_test_split
 
 class Model:
     def __init__(self):
-        self.model = None
-        self.num_of_trees = None
         self.random_forest_model = None
 
     def train(self, features, labels, output_file_path):
@@ -21,8 +19,8 @@ class Model:
         # parameters to tune
         # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier
 
-        clf = None
         best_params = None
+        best_model = None
         best_validation_score = -1
         for nun_of_trees in range(1, 10):
 
@@ -57,13 +55,14 @@ class Model:
                     if validation_score > best_validation_score:
                         best_params = params
                         best_validation_score = validation_score
+                        best_model = clf
                         logging.info(f'Found a higher validation score')
 
         logging.info(f'Training phase ended. Highest validation score: {best_validation_score}, params: {best_params}')
 
         #### Test phase ####
-        predictions = clf.predict(X_test)
+        predictions = best_model.predict(X_test)
         test_results = (np.sum(predictions == y_test) / y_test.size) * 100
-        self.model = clf
+        self.random_forest_model = best_model
         logging.info(f'Test results: {test_results}%')
-        joblib.dump(clf, output_file_path)
+        joblib.dump(best_model, output_file_path)

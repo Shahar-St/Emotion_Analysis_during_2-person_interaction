@@ -8,7 +8,7 @@ from model.Model import Model
 
 def main():
     log_file_name = 'logs_file.txt'
-    # open(log_file_name, 'w').close()  # erase existing content
+    # open(log_file_name, 'w').close()  # erase existing log file content
     logging.basicConfig(level=logging.INFO, filename=log_file_name, filemode='a+',
                         format='%(asctime)-15s %(levelname)-8s %(message)s')
     print(f'Program started, writing logs to {log_file_name}')

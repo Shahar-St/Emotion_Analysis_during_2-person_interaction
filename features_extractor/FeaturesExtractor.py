@@ -11,7 +11,7 @@ class FeaturesExtractor:
         train_data = []
         train_labels = []
         for csv_file in os.listdir(CSVs_dir_path):
-        # for i in range(10):
+        # for i in range(10): # rplace with for until we have actual input
         #     csv_file = ''
             raw_features_dict, label = FeaturesExtractor.extract_raw_features(os.path.join(CSVs_dir_path, csv_file))
             model_Features = FeaturesExtractor.process_model_features(raw_features_dict)
