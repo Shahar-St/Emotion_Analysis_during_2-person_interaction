@@ -15,7 +15,7 @@ def main():
     # Features
     CSVs_dir_name = 'input_files'  # Todo csv or excel?
     CSVs_dir_path = os.path.join(os.getcwd(), CSVs_dir_name)
-    train_data, train_labels = FeaturesExtractor.extract_features(CSVs_dir_path)
+    train_data, train_labels = FeaturesExtractor().extract_features(CSVs_dir_path)
 
     # Model
     model = Model()

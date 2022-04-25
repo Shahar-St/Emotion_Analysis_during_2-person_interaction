@@ -1,15 +1,23 @@
 raw_features_names = (
-    raw_feature1,
-    raw_feature2,
-    raw_feature3,
+    pose_Tx,
+    pose_Ty,
+    pose_Rx,
+    pose_Ry,
+    AU1_binary,
+    AU1_intensity,
+    AU2_binary,
+    AU2_intensity
 ) = ' pose_Tx', \
     ' pose_Ty', \
     ' pose_Rx', \
-    ' pose_Ry',
-
+    ' pose_Ry', \
+    ' AU01_c', \
+    ' AU01_r', \
+    ' AU02_c', \
+    ' AU02_r',
 
 model_features_names = (
-    model_feature1,
-    model_feature2
-) = 'modelFeature1', \
-    'modelFeature2'
+    pose_stds,
+    AU1_features
+) = 'pose_stds', \
+    'AU1_features'
