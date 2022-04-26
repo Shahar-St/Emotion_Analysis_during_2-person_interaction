@@ -8,7 +8,9 @@ from features_extractor.Features import *
 
 class FeaturesExtractor:
 
-    def extract_features(self, CSVs_dir_path):
+    def extract_features(self, CSVs_dir_path, num_of_parts=1, parts_range=None):
+        if parts_range is None:
+            parts_range = [[0, 1]]
         train_data = []
         train_labels = []
         csv_HRSD_path = os.path.join(CSVs_dir_path, 'HRSD-example-fabricated-data.csv')
@@ -27,7 +29,6 @@ class FeaturesExtractor:
 
     @staticmethod
     def extract_raw_features(csv_file_path, csv_file_name, csv_HRSD_path):
-
         raw_features_values = []
         csv_file = pd.read_csv(csv_file_path)
         for col in raw_features_names:
@@ -61,7 +62,7 @@ class FeaturesExtractor:
         """
 
         features_mapper = {
-            pose_stds: ([pose_Tx, pose_Ty, pose_Rx, pose_Ry], lambda x: np.std(x, axis=1)),
+            pose_stds: ([pose_Tx, pose_Ty, pose_Tz, pose_Rx, pose_Ry, pose_Rz], lambda x: np.std(x, axis=1)),
         }
 
         model_features = []
@@ -78,16 +79,14 @@ class FeaturesExtractor:
 
         return np.array(model_features + aus_features)
 
-    @staticmethod
-    def func1(args):
-        a = args
-        # logic of the feature
-        return [np.max(a)]
-
     def extract_features_for_all_aus(self, aus_pairs):
         features = []
+        liveliness = 0
         for au in aus_pairs:
-            features.extend(self.extract_aus_features(au[0], au[1]))
+            au_features, new_liveliness = self.extract_aus_features(au[0], au[1])
+            features.extend(au_features)
+            liveliness += new_liveliness
+        features.append(liveliness)
         return features
 
     @staticmethod
@@ -136,9 +135,14 @@ class FeaturesExtractor:
             phases_lens.append(end_ind - start_ind + 1)
             phases_avg_intensities.append(np.mean(au_intensity_list[start_ind:end_ind + 1]))
 
+        phases_lens = np.array(phases_lens)
+
+        num_of_phases = phases_lens.size
         len_avg = np.mean(phases_lens)
         len_std = np.std(phases_lens)
         intensity_avg = np.average(phases_avg_intensities, weights=phases_lens)
         intensity_std = np.std(phases_avg_intensities)
 
-        return [len_avg, len_std, intensity_avg, intensity_std]
+        au_liveliness = np.sum(phases_lens)
+
+        return [len_avg, len_std, intensity_avg, intensity_std, num_of_phases], au_liveliness
