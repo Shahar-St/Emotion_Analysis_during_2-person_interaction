@@ -14,13 +14,20 @@ class FeaturesExtractor:
         train_data = []
         train_labels = []
         csv_HRSD_path = os.path.join(CSVs_dir_path, 'HRSD-example-fabricated-data.csv')
+        num_of_sessions = 3
+        minutes_per_session = [6, 4, 2]  # 12 minutes in total.
+        frames_per_session = [element * 1500 for element in minutes_per_session]  # 1500 frames per minute.
+        session_number = 0
+
         for csv_file_name in os.listdir(CSVs_dir_path):
             # for i in range(10): # replace with for until we have actual input
             # csv_file = ''
             if csv_file_name == '221 w4s4 Video_example 2 1_21_2022 5_43_05 PM 2.csv':
                 raw_features_dict, label = FeaturesExtractor.extract_raw_features(os.path.join(CSVs_dir_path,
                                                                                                csv_file_name),
-                                                                                  csv_file_name, csv_HRSD_path)
+                                                                                  csv_file_name, csv_HRSD_path,
+                                                                                  num_of_sessions, frames_per_session,
+                                                                                  session_number)
                 model_Features = self.process_model_features(raw_features_dict)
                 train_data.append(model_Features)
                 train_labels.append(label)
@@ -28,26 +35,37 @@ class FeaturesExtractor:
         return np.array(train_data), np.array(train_labels)
 
     @staticmethod
-    def extract_raw_features(csv_file_path, csv_file_name, csv_HRSD_path):
+    def extract_raw_features(csv_file_path, csv_file_name, csv_HRSD_path, num_of_sessions, frames_per_session,
+                             session_number):
         raw_features_values = []
+        raw_features_values_models = []
         csv_file = pd.read_csv(csv_file_path)
-        for col in raw_features_names:
-            col_val = csv_file[col]
-            raw_features_values.append(col_val)
+        start_session = 0
+
+        for i in range(num_of_sessions):
+            end_session = start_session + frames_per_session[i]
+            for col in raw_features_names:
+                col_val = csv_file[col][start_session: end_session].tolist()
+                raw_features_values.append(col_val)
+
+            raw_features_values_models.append(raw_features_values)
+            start_session = end_session
+            raw_features_values = []
+
 
         split_name = csv_file_name.split(" ")
         patient_number = int(split_name[0])
-        session_number = int(split_name[1].split("s")[1])
+        meeting_number = int(split_name[1].split("s")[1])
 
         csv_file = pd.read_csv(csv_HRSD_path)
         index_row = 0
         for index in range(len(csv_file['patient'].tolist())):
-            if csv_file.iloc[index, 0] == patient_number and csv_file.iloc[index, 1] == session_number:
+            if csv_file.iloc[index, 0] == patient_number and csv_file.iloc[index, 1] == meeting_number:
                 index_row = index
 
-        label = (csv_file.iloc[index_row, 10], csv_file.iloc[index_row, 12])
+        label = csv_file.iloc[index_row, 10]
 
-        return dict(zip(raw_features_names, raw_features_values)), label
+        return dict(zip(raw_features_names, raw_features_values_models[session_number])), label
 
     def process_model_features(self, raw_features: dict) -> np.array:
         """
