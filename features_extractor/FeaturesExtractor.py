@@ -3,7 +3,27 @@ import os
 import numpy as np
 import pandas as pd
 
-from features_extractor.Features import *
+raw_features_names = (
+    pose_Tx,
+    pose_Ty,
+    pose_Tz,
+    pose_Rx,
+    pose_Ry,
+    pose_Rz,
+    AU1_binary,
+    AU1_intensity,
+    AU2_binary,
+    AU2_intensity
+) = ' pose_Tx', \
+    ' pose_Ty', \
+    ' pose_Tz', \
+    ' pose_Rx', \
+    ' pose_Ry', \
+    ' pose_Rz', \
+    ' AU01_c', \
+    ' AU01_r', \
+    ' AU02_c', \
+    ' AU02_r',
 
 
 class FeaturesExtractor:
@@ -13,6 +33,7 @@ class FeaturesExtractor:
             parts_range = [[0, 1]]
         train_data = []
         train_labels = []
+        features_names = []
         csv_HRSD_path = os.path.join(CSVs_dir_path, 'HRSD-example-fabricated-data.csv')
         num_of_sessions = 3
         minutes_per_session = [6, 4, 2]  # 12 minutes in total.
@@ -28,11 +49,11 @@ class FeaturesExtractor:
                                                                                   csv_file_name, csv_HRSD_path,
                                                                                   num_of_sessions, frames_per_session,
                                                                                   session_number)
-                model_Features = self.process_model_features(raw_features_dict)
+                model_Features, features_names = self.process_model_features(raw_features_dict)
                 train_data.append(model_Features)
                 train_labels.append(label)
 
-        return np.array(train_data), np.array(train_labels)
+        return np.array(train_data), np.array(train_labels), np.array(features_names)
 
     @staticmethod
     def extract_raw_features(csv_file_path, csv_file_name, csv_HRSD_path, num_of_sessions, frames_per_session,
@@ -51,7 +72,6 @@ class FeaturesExtractor:
             raw_features_values_models.append(raw_features_values)
             start_session = end_session
             raw_features_values = []
-
 
         split_name = csv_file_name.split(" ")
         patient_number = int(split_name[0])
@@ -79,23 +99,35 @@ class FeaturesExtractor:
         :return: model_features
         """
 
-        features_mapper = {
-            pose_stds: ([pose_Tx, pose_Ty, pose_Tz, pose_Rx, pose_Ry, pose_Rz], lambda x: np.std(x, axis=1)),
-        }
+        # list of (model features names, raw features names, function to apply)
+        features_mapper = [
+            (
+                ['pose_Tx_std', 'pose_Ty_std', 'pose_Tz_std', 'pose_Rx_std', 'pose_Ry_std', 'pose_Rz_std'],
+                [pose_Tx, pose_Ty, pose_Tz, pose_Rx, pose_Ry, pose_Rz],
+                lambda x: np.std(x, axis=1)
+            ),
+        ]
 
         model_features = []
-        for feature_name, feature_args in features_mapper.items():
-            args = []
-            for raw_feature in feature_args[0]:
-                args.append(raw_features[raw_feature])
-            model_features.extend(feature_args[1](args))
+        model_features_names_in_order = []
+        for model_names, feature_names, func in features_mapper:
+            args = [raw_features[raw_feature] for raw_feature in feature_names]
+            model_features.extend(func(args))
+            model_features_names_in_order.extend(model_names)
 
         aus_features = self.extract_features_for_all_aus([
             (raw_features[AU1_binary], raw_features[AU1_intensity]),
             (raw_features[AU2_binary], raw_features[AU2_intensity]),
         ])
 
-        return np.array(model_features + aus_features)
+        aus = [1, 2]
+        au_features_names = ['len_avg', 'len_std', 'intensity_avg', 'intensity_std', 'num_of_phases']
+        for au in aus:
+            for au_features_name in au_features_names:
+                model_features_names_in_order.append(f'AU{au}_{au_features_name}')
+        model_features_names_in_order.append('Liveliness')
+
+        return np.array(model_features + aus_features), model_features_names_in_order
 
     def extract_features_for_all_aus(self, aus_pairs):
         features = []
