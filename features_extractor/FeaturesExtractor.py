@@ -1,7 +1,6 @@
-import os
+import csv
 
 import numpy as np
-import pandas as pd
 
 
 class FeaturesExtractor:
@@ -13,59 +12,32 @@ class FeaturesExtractor:
         # 3. array of string (features name)
         # L[i] is the label associated with the features from F[i]
 
-        train_data = []
-        train_labels = []
-        features_names = []
+        with open(data_path) as data:
+            reader = csv.reader(data)
+            all_data = np.array([np.array(line) for line in reader])
+            features_names = all_data[0]
 
-        # csv_HRSD_path = os.path.join(CSVs_dir_path, 'HRSD-example-fabricated-data.csv')
-        # num_of_sessions = 3
-        # minutes_per_session = [6, 4, 2]  # 12 minutes in total.
-        # frames_per_session = [element * 1500 for element in minutes_per_session]  # 1500 frames per minute.
-        # session_number = 0
-        #
-        # for csv_file_name in os.listdir(CSVs_dir_path):
-        #     # for i in range(10): # replace with for until we have actual input
-        #     # csv_file = ''
-        #     if csv_file_name == '221 w4s4 Video_example 2 1_21_2022 5_43_05 PM 2.csv':
-        #         raw_features_dict, label = FeaturesExtractor.extract_raw_features(os.path.join(CSVs_dir_path,
-        #                                                                                        csv_file_name),
-        #                                                                           csv_file_name, csv_HRSD_path,
-        #                                                                           num_of_sessions, frames_per_session,
-        #                                                                           session_number)
-        #         model_Features, features_names = self.process_model_features(raw_features_dict)
-        #         train_data.append(model_Features)
-        #         train_labels.append(label)
+            # remove empty cols
+            empty_cols = np.where(features_names == '')[0]
+            cols_to_keep = list(range(all_data.shape[1]))
+            for col in empty_cols:
+                cols_to_keep.pop(col)
+                features_names = np.delete(features_names, col)
 
-        return np.array(train_data), np.array(train_labels), np.array(features_names)
-    #
-    # @staticmethod
-    # def extract_raw_features(csv_file_path, csv_file_name, csv_HRSD_path, num_of_sessions, frames_per_session,
-    #                          session_number):
-    #     raw_features_values = []
-    #     raw_features_values_models = []
-    #     csv_file = pd.read_csv(csv_file_path)
-    #     start_session = 0
-    #
-    #     for i in range(num_of_sessions):
-    #         end_session = start_session + frames_per_session[i]
-    #         for col in raw_features_names:
-    #             col_val = csv_file[col][start_session: end_session].tolist()
-    #             raw_features_values.append(col_val)
-    #
-    #         raw_features_values_models.append(raw_features_values)
-    #         start_session = end_session
-    #         raw_features_values = []
-    #
-    #     split_name = csv_file_name.split(" ")
-    #     patient_number = int(split_name[0])
-    #     meeting_number = int(split_name[1].split("s")[1])
-    #
-    #     csv_file = pd.read_csv(csv_HRSD_path)
-    #     index_row = 0
-    #     for index in range(len(csv_file['patient'].tolist())):
-    #         if csv_file.iloc[index, 0] == patient_number and csv_file.iloc[index, 1] == meeting_number:
-    #             index_row = index
-    #
-    #     label = csv_file.iloc[index_row, 10]
-    #
-    #     return dict(zip(raw_features_names, raw_features_values_models[session_number])), label
+            all_data = all_data[:, cols_to_keep]
+
+            # get labels
+            index_of_label = np.where(features_names == 'Group')[0][0]
+            all_data = all_data[1:]  # remove header
+            train_labels = all_data[:, index_of_label]
+            features_names = np.delete(features_names, index_of_label)
+
+            # remove label col
+            indices_to_keep = list(range(all_data.shape[1]))
+            indices_to_keep.pop(index_of_label)
+            train_data = all_data[:, indices_to_keep]
+
+            train_data = np.array(train_data, dtype=float)
+            train_labels = np.array(train_labels, dtype=int)
+
+            return np.array(train_data), np.array(train_labels), np.array(features_names)

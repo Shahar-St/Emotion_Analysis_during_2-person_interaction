@@ -15,16 +15,11 @@ class Model:
         self.random_forest_model = None
 
     def train(self, features, labels, features_names, output_file_path):
-        # data_size = 40
-        # features_num = 10
-        # features = [np.random.uniform(0, 10, features_num) for _ in range(data_size)]
-        # labels = [np.random.randint(0, 15) for _ in range(data_size)]
-        # features_names = [f'feature{i}' for i in range(features_num)]
-
         logging.info('------------------------Starting Training------------------------')
 
         test_size = 0.2
-        X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size)
+        X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size, stratify=labels)
+        # todo check stratified
 
         #### Train phase ####
         regressor = RandomForestRegressor(n_jobs=5)
@@ -58,7 +53,7 @@ class Model:
 
         regressor = grid_search.best_estimator_
 
-        logging.info('Model params:')
+        logging.info('\nModel params:')
         for key, value in regressor.get_params().items():
             logging.info(f'{key} : {value}')
 
@@ -67,7 +62,7 @@ class Model:
         # Plot train results
         train_pred = regressor.predict(X_train)
         plt.title('Train data and error')
-        plt.scatter(range(train_pred.size), train_pred, color="black", label='Regression')
+        plt.scatter(range(train_pred.size), train_pred, color="black", label='Train predictions')
         plt.plot(y_train, color="blue", linewidth=3, label='Train data')
         plt.legend()
         plt.show()
@@ -81,7 +76,7 @@ class Model:
 
         # Plot test results
         plt.title('Predictions vs Test data')
-        plt.scatter(range(y_pred.size), y_pred, color="black", label='Predicted')
+        plt.scatter(range(y_pred.size), y_pred, color="black", label='Test Predictions')
         plt.plot(y_test, color="blue", linewidth=3, label='Test data')
         plt.legend()
         plt.show()
@@ -92,7 +87,7 @@ class Model:
         forest_importance = pd.Series(importance, index=features_names)
         fig, ax = plt.subplots()
         forest_importance.plot.bar(yerr=std, ax=ax)
-        ax.set_title("Feature importance using MDI")
+        ax.set_title("Feature importance using mean decrease in impurity")
         ax.set_ylabel("Mean decrease in impurity")
         fig.tight_layout()
         plt.show()
