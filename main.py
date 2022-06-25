@@ -5,7 +5,8 @@ import time
 import numpy as np
 
 from features_extractor.FeaturesExtractor import FeaturesExtractor
-from model.Model import Model
+from model.Classifier import Classifier
+from model.Regressor import Regressor
 
 
 def main():
@@ -21,30 +22,38 @@ def main():
     data_file_name = 'clinical_and_sub_clinical.csv'
     data_file_dir_name = 'input_files'
     data_path = os.path.join(os.getcwd(), data_file_dir_name, data_file_name)
-    train_features, train_labels, features_names = FeaturesExtractor().extract_features(data_path)
+    train_features, train_labels, features_names = FeaturesExtractor.extract_features(data_path)
 
     # 123 vs 4 model
-    train_features_123vs4, train_labels_123vs4, features_names_123vs4 = \
-        adjust_data_to_123_vs_4(train_features, train_labels, features_names)
+    run_model_123_vs_4(train_features, train_labels, features_names)
 
-    model_123_vs_4 = Model()
-    output_file_path = os.path.join(os.getcwd(), 'model/model_file_123_vs_4')
-    model_123_vs_4.train(train_features_123vs4, train_labels_123vs4, features_names_123vs4, output_file_path)
+    run_anxiety_model(train_features, train_labels, features_names)
+
+    run_depression_model(train_features, train_labels, features_names)
 
     print('Program finished')
 
 
-def adjust_data_to_123_vs_4(train_features, train_labels, features_names):
-    new_features = []
-    new_labels = []
+def run_model_123_vs_4(train_features, train_labels, features_names):
     # quick and dirty: groups 1/2/3 (clinical and sub) vs 4
-    for features, label in zip(train_features, train_labels):
-        new_features.append(features.tolist() + [label])
-        new_labels.append(1 if label in (1, 2, 3) else 4)
 
-    new_features_names = features_names.tolist() + ['Original_label']
+    # adjust labels
+    new_labels = []
+    for label in train_labels:
+        new_labels.append(0 if label in (1, 2, 3) else 1)
+    train_labels = np.array(new_labels)
 
-    return np.array(new_features), np.array(new_labels), np.array(new_features_names)
+    model_123_vs_4 = Classifier()
+    output_file_path = os.path.join(os.getcwd(), 'model/model_file_123_vs_4')
+    model_123_vs_4.train(train_features, train_labels, features_names, output_file_path)
+
+
+def run_anxiety_model(train_features, train_labels, features_names):
+    pass
+
+
+def run_depression_model(train_features, train_labels, features_names):
+    pass
 
 
 if __name__ == '__main__':
