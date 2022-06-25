@@ -13,7 +13,7 @@ def main():
     print(f'Program started, writing logs to {log_file_name}')
 
     # Features
-    data_file_name = ''  # todo fill up
+    data_file_name = 'clinical_and_sub_clinical.csv'
     data_file_dir_name = 'input_files'
     data_path = os.path.join(os.getcwd(), data_file_dir_name, data_file_name)
     train_data, train_labels, features_names = FeaturesExtractor().extract_features(data_path)
