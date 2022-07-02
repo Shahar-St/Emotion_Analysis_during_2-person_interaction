@@ -36,7 +36,7 @@ def remove_missing_values():
 
     # handle missing values in db with all subjects:
     # features to omit from db
-    combined_features_to_remove = ["BDI_SCORE", "STAI_SCORE", "PSWQ_SCORE", "RRS_SCORE",
+    combined_features_to_remove = ["PSWQ_SCORE", "RRS_SCORE",
                                    "DASS_Depression", "DASS_Anxiety", "DASS_stress",
                                    "ExpectancyConfidance_positive.reject", "ExpectancyAcceptance",
                                    "ExpectancyConfidance_negative.accept",
@@ -50,9 +50,9 @@ def remove_missing_values():
     reomve_Nan_rows(sub_clinical_df)
 
     # save as csv file
-    sub_clinical_df.to_csv("sub_clinical.csv")
-    clinical_df.to_csv("clinical.csv")
-    data.to_csv("clinical_and_sub_clinical.csv")
+    # sub_clinical_df.to_csv("sub_clinical.csv")
+    # clinical_df.to_csv("clinical.csv")
+    data.to_csv("clinical_and_sub_clinical_with_score.csv")
 
 
 #########################################################################

@@ -22,6 +22,110 @@ class ModelUtil:
         plt.show()
 
     @staticmethod
+    def plot_importance_top_k(model, features_names, num_of_features):
+        importance = model.feature_importances_
+        indices = np.argpartition(importance, -num_of_features)[-num_of_features:]
+        top_importance = importance[indices]
+        top_features_names = features_names[indices]
+        std = np.std([tree.feature_importances_[indices] for tree in model.estimators_], axis=0)
+
+        sort_indices = np.argsort(top_importance)
+        sorted_top_importance = top_importance[sort_indices]
+        sorted_top_features_names = top_features_names[sort_indices]
+        sorted_std = std[sort_indices]
+
+        forest_importance = pd.Series(sorted_top_importance, index=sorted_top_features_names)
+        fig, ax = plt.subplots()
+        forest_importance.plot.barh(yerr=sorted_std, ax=ax)
+        ax.set_title("Feature importance using MDI")
+        ax.set_ylabel("Mean decrease in impurity")
+        fig.tight_layout()
+        plt.xticks(fontsize=10)
+        plt.show()
+
+    @staticmethod
+    def plot_comparator_graph(data, features_names):
+        features = [
+            'Interpretation_NegSelection',
+            'ExpectancyConfidance_positive.accept',
+            'InterferenceIncong_Neg-Neu',
+            'ISC_Emotional',
+            'InterpretationRT_Pos'
+        ]
+
+        labels_dict = {
+            'Anxiety': 'STAI_SCORE',
+            'Depression': 'BDI_SCORE'
+        }
+        for label, label_col in labels_dict.items():
+            label_values = ModelUtil.get_values_of_col_name(data, features_names, label_col)
+            for feature_num, feature_name in enumerate(features):
+                feature_data_values = ModelUtil.get_values_of_col_name(data, features_names, feature_name)
+                samples = ModelUtil.get_values_of_col_name(data, features_names, 'Sample')
+                groups = ModelUtil.get_values_of_col_name(data, features_names, 'Group')
+
+                clinical_sym = []
+                clinical_sym_x = []
+
+                clinical_a_sym = []
+                clinical_a_sym_x = []
+
+                sub_clinical_sym = []
+                sub_clinical_sym_x = []
+
+                sub_clinical_a_sym = []
+                sub_clinical_a_sym_x = []
+
+                for feature_val, sample, group, label_value in zip(feature_data_values, samples, groups, label_values):
+                    if label == 'Anxiety':
+                        if sample == 1 and group in (1, 3):
+                            sub_clinical_sym.append(feature_val)
+                            sub_clinical_sym_x.append(label_value)
+                        if sample == 1 and group not in (1, 3):
+                            sub_clinical_a_sym.append(feature_val)
+                            sub_clinical_a_sym_x.append(label_value)
+                        if sample == 2 and group in (1, 3):
+                            clinical_sym.append(feature_val)
+                            clinical_sym_x.append(label_value)
+                        if sample == 2 and group not in (1, 3):
+                            clinical_a_sym.append(feature_val)
+                            clinical_a_sym_x.append(label_value)
+                    else:
+                        if sample == 1 and group in (2, 3):
+                            sub_clinical_sym.append(feature_val)
+                            sub_clinical_sym_x.append(label_value)
+                        if sample == 1 and group not in (2, 3):
+                            sub_clinical_a_sym.append(feature_val)
+                            sub_clinical_a_sym_x.append(label_value)
+                        if sample == 2 and group in (2, 3):
+                            clinical_sym.append(feature_val)
+                            clinical_sym_x.append(label_value)
+                        if sample == 2 and group not in (2, 3):
+                            clinical_a_sym.append(feature_val)
+                            clinical_a_sym_x.append(label_value)
+
+                marker_size = 35
+                marker = '*'
+                plt.scatter(clinical_sym_x, clinical_sym, color='red', label='cli_sym', s=marker_size, marker=marker)
+                plt.scatter(clinical_a_sym_x, clinical_a_sym, color='orange', label='cli_asym', s=marker_size, marker=marker)
+                plt.scatter(sub_clinical_sym_x, sub_clinical_sym, color='blue', label='sub_cli_sym', s=marker_size, marker=marker)
+                plt.scatter(sub_clinical_a_sym_x, sub_clinical_a_sym, color='skyblue', label='sub_cli_asym', s=marker_size, marker=marker)
+
+
+                plt.title(f'{label} | Feature #{feature_num + 1}: {feature_name}')
+                plt.xlabel(f'{label_col} score')
+                plt.ylabel('feature values')
+                plt.legend()
+                plt.savefig(f'{label}-Feature #{feature_num + 1}-{feature_name}.png')
+                plt.clf()
+                # plt.show()
+
+    @staticmethod
+    def get_values_of_col_name(data, features_names, col_name):
+        index_of_col = np.where(features_names == col_name)[0][0]
+        return data[:, index_of_col]
+
+    @staticmethod
     def tune_hyper_params(model, parameters_to_tune, features, labels):
         grid_search = GridSearchCV(model, parameters_to_tune, n_jobs=5, cv=5, verbose=1)
         grid_search.fit(features, labels)

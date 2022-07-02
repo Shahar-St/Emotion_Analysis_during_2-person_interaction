@@ -2424,3 +2424,95 @@ warm_start : False
 Accuracy: 60.60606060606061%
 Wrong from clinical: 46.15384615384615%
 Wrong from sub-clinical: 53.84615384615385%
+
+
+
+
+NEW TRAIN - Time: 22:39:01
+
+------------------------Starting Training------------------------
+CV scores:
+
+Model params:
+bootstrap : True
+ccp_alpha : 0.0
+class_weight : None
+criterion : entropy
+max_depth : None
+max_features : auto
+max_leaf_nodes : None
+max_samples : None
+min_impurity_decrease : 0.0
+min_samples_leaf : 1
+min_samples_split : 7
+min_weight_fraction_leaf : 0.0
+n_estimators : 29
+n_jobs : 5
+oob_score : False
+random_state : None
+verbose : 0
+warm_start : False
+
+Accuracy: 50.0%
+Wrong from clinical: 9.090909090909092%
+Wrong from sub-clinical: 90.9090909090909%
+
+
+NEW TRAIN - Time: 22:39:17
+
+------------------------Starting Training------------------------
+CV scores:
+
+Model params:
+bootstrap : True
+ccp_alpha : 0.0
+class_weight : None
+criterion : entropy
+max_depth : None
+max_features : auto
+max_leaf_nodes : None
+max_samples : None
+min_impurity_decrease : 0.0
+min_samples_leaf : 1
+min_samples_split : 7
+min_weight_fraction_leaf : 0.0
+n_estimators : 29
+n_jobs : 5
+oob_score : False
+random_state : None
+verbose : 0
+warm_start : False
+
+Accuracy: 59.09090909090909%
+Wrong from clinical: 0.0%
+Wrong from sub-clinical: 100.0%
+
+
+NEW TRAIN - Time: 22:39:27
+
+------------------------Starting Training------------------------
+CV scores:
+
+Model params:
+bootstrap : True
+ccp_alpha : 0.0
+class_weight : None
+criterion : entropy
+max_depth : None
+max_features : auto
+max_leaf_nodes : None
+max_samples : None
+min_impurity_decrease : 0.0
+min_samples_leaf : 1
+min_samples_split : 7
+min_weight_fraction_leaf : 0.0
+n_estimators : 29
+n_jobs : 5
+oob_score : False
+random_state : None
+verbose : 0
+warm_start : False
+
+Accuracy: 72.72727272727273%
+Wrong from clinical: 33.33333333333333%
+Wrong from sub-clinical: 66.66666666666666%

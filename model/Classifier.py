@@ -9,26 +9,37 @@ from model.ModelUtil import ModelUtil
 
 
 class Classifier:
-    def __init__(self):
-        self.random_forest_model = None
+
+    def __init__(self, classifier=None):
+        self.random_forest_model = classifier
+        self.feature_names = None
+        self.X_train = None
+        self.X_test = None
+        self.y_train = None
+        self.y_test = None
+        self.acc = None
 
     def train(self, features, labels, features_names, output_file_path):
         logging.info('------------------------Starting Training------------------------')
 
-        test_size = 0.15
+        test_size = 0.1
         X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size,
                                                             shuffle=True)
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
 
         #### Train phase ####
         classifier = RandomForestClassifier(
             n_jobs=5,
-            n_estimators=29,
-            criterion='entropy',
-            min_samples_split=7,
+            # n_estimators=29,
+            # criterion='entropy',
+            # min_samples_split=7,
         )
 
         parameters_to_tune = {
-            # 'n_estimators': range(25, 35), # done
+            'n_estimators': range(5, 35),  # done
             # 'criterion': ['gini', 'entropy'], # done
             # 'min_samples_split': list(range(4, 11)),  # done
             # 'max_features': [None, 'sqrt', 'log2'],  # done
@@ -59,7 +70,9 @@ class Classifier:
                 else:
                     raise RuntimeError('Got sample != 1/2')
         acc = correct / len(y_pred)
+        self.acc = acc
         total_wrong = wrong_from_clinical + wrong_from_sub_clinical
+        print(f'Classifier Accuracy {acc * 100}%')
         logging.info(f'Accuracy: {acc * 100}%')
         logging.info(f'Wrong from clinical: {(wrong_from_clinical / total_wrong) * 100}%')
         logging.info(f'Wrong from sub-clinical: {(wrong_from_sub_clinical / total_wrong) * 100}%')
@@ -72,8 +85,17 @@ class Classifier:
         plt.show()
 
         # most important features
-        ModelUtil.plot_importance(classifier, features_names)
+        ModelUtil.plot_importance_top_k(classifier, features_names, 10)
 
         # save data
         self.random_forest_model = classifier
-        joblib.dump(classifier, output_file_path)
+        self.feature_names = features_names
+        joblib.dump(self, output_file_path)
+
+    @staticmethod
+    def init_from_file_name(file_name):
+        model: Classifier = joblib.load(file_name)
+        return model
+
+    def plot_feature_importance(self, feature_names):
+        ModelUtil.plot_importance_top_k(self.random_forest_model, feature_names, 10)
