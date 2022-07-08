@@ -22,7 +22,8 @@ class Classifier:
     def train(self, features, labels, features_names, output_file_path):
         logging.info('------------------------Starting Training------------------------')
 
-        test_size = 0.1
+        test_size = 0.2
+        logging.info(f'Test size: {test_size}')
         X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size,
                                                             shuffle=True)
         self.X_train = X_train
@@ -33,17 +34,16 @@ class Classifier:
         #### Train phase ####
         classifier = RandomForestClassifier(
             n_jobs=5,
-            # n_estimators=29,
-            # criterion='entropy',
-            # min_samples_split=7,
+            n_estimators=31,
+            criterion='entropy',
         )
 
         parameters_to_tune = {
-            'n_estimators': range(5, 35),  # done
-            # 'criterion': ['gini', 'entropy'], # done
-            # 'min_samples_split': list(range(4, 11)),  # done
+            # 'n_estimators': range(28, 35),  # done
+            # 'criterion': ['gini', 'entropy'],  # done
+            # 'min_samples_split': list(range(2, 8)),  # done
             # 'max_features': [None, 'sqrt', 'log2'],  # done
-            # 'ccp_alpha': [0.0, 0.1, 0.2] # done
+            # 'ccp_alpha': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5] # done
         }
 
         classifier = ModelUtil.tune_hyper_params(classifier, parameters_to_tune, X_train, y_train)

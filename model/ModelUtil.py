@@ -22,9 +22,12 @@ class ModelUtil:
         plt.show()
 
     @staticmethod
-    def plot_importance_top_k(model, features_names, num_of_features):
+    def plot_importance_top_k(model, features_names, num_of_features, model_name=None, top=True):
         importance = model.feature_importances_
-        indices = np.argpartition(importance, -num_of_features)[-num_of_features:]
+        if top is True:
+            indices = np.argpartition(importance, -num_of_features)[-num_of_features:]
+        else:
+            indices = np.argpartition(importance, num_of_features)[:num_of_features]
         top_importance = importance[indices]
         top_features_names = features_names[indices]
         std = np.std([tree.feature_importances_[indices] for tree in model.estimators_], axis=0)
@@ -37,21 +40,25 @@ class ModelUtil:
         forest_importance = pd.Series(sorted_top_importance, index=sorted_top_features_names)
         fig, ax = plt.subplots()
         forest_importance.plot.barh(yerr=sorted_std, ax=ax)
-        ax.set_title("Feature importance using MDI")
+        suffix = 'Most Important' if top else 'Least Important'
+        ax.set_title(f"Feature importance using MDI - {suffix}")
         ax.set_ylabel("Mean decrease in impurity")
         fig.tight_layout()
         plt.xticks(fontsize=10)
-        plt.show()
+        if model_name is not None:
+            plt.savefig(f'{model_name}-model-top features')
+        else:
+            plt.show()
+        plt.clf()
 
     @staticmethod
-    def plot_comparator_graph(data, features_names):
-        features = [
-            'Interpretation_NegSelection',
-            'ExpectancyConfidance_positive.accept',
-            'InterferenceIncong_Neg-Neu',
-            'ISC_Emotional',
-            'InterpretationRT_Pos'
-        ]
+    def plot_comparator_graph(model, data, features_names, num_of_features):
+        importance = model.feature_importances_
+        indices = np.argpartition(importance, -num_of_features)[-num_of_features:]
+        top_importance = importance[indices]
+        top_features_names = features_names[indices]
+        sort_indices = np.argsort(top_importance)
+        sorted_top_features_names = top_features_names[sort_indices][::-1]
 
         labels_dict = {
             'Anxiety': 'STAI_SCORE',
@@ -59,7 +66,7 @@ class ModelUtil:
         }
         for label, label_col in labels_dict.items():
             label_values = ModelUtil.get_values_of_col_name(data, features_names, label_col)
-            for feature_num, feature_name in enumerate(features):
+            for feature_num, feature_name in enumerate(sorted_top_features_names):
                 feature_data_values = ModelUtil.get_values_of_col_name(data, features_names, feature_name)
                 samples = ModelUtil.get_values_of_col_name(data, features_names, 'Sample')
                 groups = ModelUtil.get_values_of_col_name(data, features_names, 'Group')
@@ -107,10 +114,12 @@ class ModelUtil:
                 marker_size = 35
                 marker = '*'
                 plt.scatter(clinical_sym_x, clinical_sym, color='red', label='cli_sym', s=marker_size, marker=marker)
-                plt.scatter(clinical_a_sym_x, clinical_a_sym, color='orange', label='cli_asym', s=marker_size, marker=marker)
-                plt.scatter(sub_clinical_sym_x, sub_clinical_sym, color='blue', label='sub_cli_sym', s=marker_size, marker=marker)
-                plt.scatter(sub_clinical_a_sym_x, sub_clinical_a_sym, color='skyblue', label='sub_cli_asym', s=marker_size, marker=marker)
-
+                plt.scatter(clinical_a_sym_x, clinical_a_sym, color='orange', label='cli_asym', s=marker_size,
+                            marker=marker)
+                plt.scatter(sub_clinical_sym_x, sub_clinical_sym, color='blue', label='sub_cli_sym', s=marker_size,
+                            marker=marker)
+                plt.scatter(sub_clinical_a_sym_x, sub_clinical_a_sym, color='skyblue', label='sub_cli_asym',
+                            s=marker_size, marker=marker)
 
                 plt.title(f'{label} | Feature #{feature_num + 1}: {feature_name}')
                 plt.xlabel(f'{label_col} score')
