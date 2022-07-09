@@ -25,9 +25,9 @@ class ModelUtil:
     def plot_importance_top_k(model, features_names, num_of_features, model_name=None, top=True):
         importance = model.feature_importances_
         if top is True:
-            indices = np.argpartition(importance, -num_of_features)[-num_of_features:]
+            indices = np.argsort(importance)[-num_of_features:]
         else:
-            indices = np.argpartition(importance, num_of_features)[:num_of_features]
+            indices = np.argsort(importance)[:num_of_features]
         top_importance = importance[indices]
         top_features_names = features_names[indices]
         std = np.std([tree.feature_importances_[indices] for tree in model.estimators_], axis=0)

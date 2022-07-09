@@ -29,18 +29,29 @@ class Regressor:
         logging.info(f'Range = [{min_score}, {max_score}]')
         X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=test_size,
                                                             shuffle=True)
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+
         #### Train phase ####
         model = RandomForestRegressor(
-            n_jobs=5
+            n_jobs=5,
+            n_estimators=30,
+            criterion='absolute_error',
+            max_features=None,
+            oob_score=True,
+            max_depth=62,
+            min_samples_split=16
         )
 
         parameters_to_tune = {
-            'n_estimators': range(20, 30),
-            'criterion': ['squared_error', 'absolute_error', 'poisson'],
-            # 'max_depth': [None] + list(range(5, 15)),
-            # 'min_samples_split': list(range(2, 15)),
+            # 'n_estimators': range(25, 32),
+            # 'criterion': ['squared_error', 'absolute_error', 'poisson'],
+            # 'max_depth': list(range(59, 65)),  # + [None],
+            # 'min_samples_split': list(range(5, 25)),
             # 'min_samples_leaf': list(range(1, 15)),
-            # 'max_features': ['auto', 'sqrt', 'log2'],
+            # 'max_features': [None, 'sqrt', 'log2'],
             # 'max_leaf_nodes': [None] + list(range(15, 30)),
             # 'oob_score': [True, False],
             # 'ccp_alpha': [0.0, 0.1, 0.2, 0.3, 0.4]
@@ -93,8 +104,9 @@ class Regressor:
         plt.show()
 
         # most important features
-        ModelUtil.plot_importance_top_k(model, features_names, 10)
-        ModelUtil.plot_importance_top_k(model, features_names, 10, top=False)
+        ModelUtil.plot_importance_top_k(model, features_names, len(features_names))
+        ModelUtil.plot_importance_top_k(model, features_names, int(len(features_names) / 2))
+        ModelUtil.plot_importance_top_k(model, features_names, int(len(features_names) / 2), top=False)
 
         # save data
         self.random_forest_model = model
