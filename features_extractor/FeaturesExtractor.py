@@ -16,20 +16,7 @@ class FeaturesExtractor:
         if cols_to_remove is None:
             cols_to_remove = []
         with open(data_path) as data:
-            reader = csv.reader(data)
-            all_data = np.array([np.array(line) for line in reader])
-            features_names = all_data[0]
-
-            # remove empty cols
-            empty_cols = np.where(features_names == '')[0]
-            cols_to_keep = list(range(all_data.shape[1]))
-            for col in empty_cols:
-                cols_to_keep.pop(col)
-                features_names = np.delete(features_names, col)
-
-            all_data = all_data[:, cols_to_keep]
-
-            all_data = all_data[1:]  # remove header
+            all_data, features_names = FeaturesExtractor.get_raw_data(data)
 
             # get labels
             index_of_label = np.where(features_names == label_col)[0][0]
@@ -44,13 +31,56 @@ class FeaturesExtractor:
             train_data = np.array(all_data, dtype=float)
             train_labels = np.array(train_labels, dtype=float).astype(int)
 
-            return np.array(train_data), np.array(train_labels), np.array(features_names)
+            return train_data, train_labels, np.array(features_names)
+
+    @staticmethod
+    def get_data_only_cols(data_path, cols_to_take, label_name=None):
+        with open(data_path) as data:
+            all_data, features_names = FeaturesExtractor.get_raw_data(data)
+
+            temp_f_names = features_names.copy()
+            for col in temp_f_names:
+                if col not in cols_to_take:
+                    all_data, features_names = FeaturesExtractor.remove_col_of_name(all_data, features_names, col)
+
+            data = np.array(all_data, dtype=float)
+            features_names = np.array(features_names)
+
+            if label_name is not None:
+                index_of_label = np.where(features_names == label_name)[0][0]
+                train_labels = data[:, index_of_label]
+                data, features_names = FeaturesExtractor.remove_col_of_name(all_data, features_names, label_name)
+                return data, train_labels, features_names
+
+            return data, features_names
 
     @staticmethod
     def remove_col_of_name(data, features_names, col_name):
         indices_to_keep = list(range(data.shape[1]))
-        index_of_col = np.where(features_names == col_name)[0][0]
-        indices_to_keep.pop(index_of_col)
-        features_names = np.delete(features_names, index_of_col)
-        data = data[:, indices_to_keep]
-        return data, features_names
+        try:
+            index_of_col = np.where(features_names == col_name)[0][0]
+            indices_to_keep.pop(index_of_col)
+            features_names = np.delete(features_names, index_of_col)
+            data = data[:, indices_to_keep]
+            return data, features_names
+        except IndexError as err:
+            print(f"Couldn't find col: {col_name}")
+            raise err
+
+    @staticmethod
+    def get_raw_data(data):
+        reader = csv.reader(data)
+        all_data = np.array([np.array(line) for line in reader])
+        features_names = all_data[0]
+
+        # remove empty cols
+        empty_cols = np.where(features_names == '')[0]
+        cols_to_keep = list(range(all_data.shape[1]))
+        for col in empty_cols:
+            cols_to_keep.pop(col)
+            features_names = np.delete(features_names, col)
+
+        all_data = all_data[:, cols_to_keep]
+
+        all_data = all_data[1:]  # remove header
+        return all_data, features_names

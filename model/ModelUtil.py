@@ -1,4 +1,5 @@
 import logging
+import os.path
 
 import numpy as np
 import pandas as pd
@@ -9,20 +10,42 @@ from sklearn.model_selection import GridSearchCV
 class ModelUtil:
 
     @staticmethod
-    def plot_importance(model, features_names):
-        importance = model.feature_importances_
-        std = np.std([tree.feature_importances_ for tree in model.estimators_], axis=0)
-        forest_importance = pd.Series(importance, index=features_names)
-        fig, ax = plt.subplots()
-        forest_importance.plot.bar(yerr=std, ax=ax)
-        ax.set_title("Feature importance using mean decrease in impurity")
-        ax.set_ylabel("Mean decrease in impurity")
-        fig.tight_layout()
-        plt.xticks(fontsize=10)
-        plt.show()
+    def tune_hyper_params(model, parameters_to_tune, features, labels):
+        grid_search = GridSearchCV(model, parameters_to_tune, n_jobs=5, cv=5, verbose=1)
+        grid_search.fit(features, labels)
+
+        if len(parameters_to_tune) > 0:
+            cv_results = grid_search.cv_results_
+            logging.info('CV scores:')
+
+            for param, values in parameters_to_tune.items():
+                logging.info(f'\t{param}:')
+
+                indices = [np.where(cv_results['param_' + param] == value)[0][0] for value in values]
+                scores = [cv_results['mean_test_score'][i] for i in indices]
+                for value, score in zip(values, scores):
+                    chosen_msg = ' <-- This was chosen' if grid_search.best_params_[param] == value else ''
+                    logging.info(f'\t\t{value}: {score:.3f}{chosen_msg}')
+
+        return grid_search.best_estimator_
 
     @staticmethod
-    def plot_importance_top_k(model, features_names, num_of_features, model_name=None, top=True):
+    def plot_test_vs_error(test_sorted, errors_sorted, label_name, output_dir=None):
+        title = f'{label_name} Score vs test absolute errors'
+        plt.title(title)
+        plt.scatter(test_sorted, errors_sorted)
+        plt.xlabel(f'{label_name} Score')
+        plt.ylabel('Error')
+        if output_dir is None:
+            plt.show()
+        else:
+            plot_path = os.path.join(output_dir, title)
+            plt.savefig(plot_path)
+        plt.clf()
+        plt.close()
+
+    @staticmethod
+    def plot_importance_top_k(model, features_names, num_of_features, output_dir=None, top=True):
         importance = model.feature_importances_
         if top is True:
             indices = np.argsort(importance)[-num_of_features:]
@@ -45,11 +68,13 @@ class ModelUtil:
         ax.set_ylabel("Mean decrease in impurity")
         fig.tight_layout()
         plt.xticks(fontsize=10)
-        if model_name is not None:
-            plt.savefig(f'{model_name}-model-top features')
+        if output_dir is not None:
+            plot_path = os.path.join(output_dir, f'top {num_of_features} features')
+            plt.savefig(plot_path)
         else:
             plt.show()
         plt.clf()
+        plt.close()
 
     @staticmethod
     def plot_comparator_graph(model, data, features_names, num_of_features):
@@ -135,20 +160,19 @@ class ModelUtil:
         return data[:, index_of_col]
 
     @staticmethod
-    def tune_hyper_params(model, parameters_to_tune, features, labels):
-        grid_search = GridSearchCV(model, parameters_to_tune, n_jobs=5, cv=5, verbose=1)
-        grid_search.fit(features, labels)
+    def plot_feature_vs_scores(data, features_names):
+        stai = ModelUtil.get_values_of_col_name(data, features_names, 'STAI_SCORE')
+        bdi = ModelUtil.get_values_of_col_name(data, features_names, 'BDI_SCORE')
 
-        cv_results = grid_search.cv_results_
-        logging.info('CV scores:')
+        features_to_display = [f for f in features_names if f not in ['STAI_SCORE', 'BDI_SCORE']]
 
-        for param, values in parameters_to_tune.items():
-            logging.info(f'\t{param}:')
-
-            indices = [np.where(cv_results['param_' + param] == value)[0][0] for value in values]
-            scores = [cv_results['mean_test_score'][i] for i in indices]
-            for value, score in zip(values, scores):
-                chosen_msg = ' <-- This was chosen' if grid_search.best_params_[param] == value else ''
-                logging.info(f'\t\t{value}: {score:.3f}{chosen_msg}')
-
-        return grid_search.best_estimator_
+        for feature_to_display in features_to_display:
+            f_vals = ModelUtil.get_values_of_col_name(data, features_names, feature_to_display)
+            title = f'{feature_to_display} vs STAI & BDI'
+            plt.title(title)
+            plt.scatter(f_vals, stai, color='red', label='STAI')
+            plt.scatter(f_vals, bdi, color='blue', label='BDI')
+            plt.ylabel(feature_to_display)
+            plt.legend()
+            plt.savefig(title.replace('.', '-'))
+            plt.clf()
