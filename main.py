@@ -146,7 +146,7 @@ def build_and_train_anxiety_regression_implicit(withDuplicatingData=False):
 def build_and_train_depression_regression_implicit(withDuplicatingData=False):
     suffix = '_wd' if withDuplicatingData else ''
     model_name = f'depression_regression_implicit{suffix}'
-    build_and_train_regression(['BDI_SCORE'] + implicit_features, False, 'BDI', model_name, withDuplicatingData, 50,
+    build_and_train_regression(['BDI_SCORE'] + implicit_features, False, 'BDI', model_name, withDuplicatingData, 29,
                                show_plots=False)
 
 
@@ -160,7 +160,7 @@ def build_and_train_anxiety_regression_explicit(withDuplicatingData=False):
 def build_and_train_depression_regression_explicit(withDuplicatingData=False):
     suffix = '_wd' if withDuplicatingData else ''
     model_name = f'depression_regression_implicit{suffix}'
-    build_and_train_regression(['BDI_SCORE'] + explicit_features, False, 'BDI', model_name, withDuplicatingData, 50,
+    build_and_train_regression(['BDI_SCORE'] + explicit_features, False, 'BDI', model_name, withDuplicatingData, 29,
                                show_plots=False)
 
 
