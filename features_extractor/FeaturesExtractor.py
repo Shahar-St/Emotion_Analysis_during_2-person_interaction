@@ -7,11 +7,17 @@ class FeaturesExtractor:
 
     @staticmethod
     def extract_features(data_path, with_label=False, label_col='Group', cols_to_remove=None):
-        # Get the input file, read the data and extract:
-        # 1. array of arrays (features values) F
-        # 2. array of ints (labels) L (group col)
-        # 3. array of string (features name)
-        # L[i] is the label associated with the features from F[i]
+        """
+        :param data_path: path to csv file
+        :param with_label: whether to leave in the label col
+        :param label_col: name of label col
+        :param cols_to_remove: list of cols to remove from the data
+        :return:
+        1. array of arrays (features values) F
+        2. array of ints (labels) L (group col)
+        3. array of string (features name)
+        L[i] is the label associated with the features from F[i]
+        """
 
         if cols_to_remove is None:
             cols_to_remove = []
@@ -35,6 +41,16 @@ class FeaturesExtractor:
 
     @staticmethod
     def get_data_only_cols(data_path, cols_to_take, label_name=None):
+        """
+        :param data_path: path to csv file
+        :param cols_to_take: all cols to take (need to include the label col as well)
+        :param label_name: name of label col. if None, return data and feature names (wo the labels array)
+        :return:
+        1. array of arrays (features values) F
+        2. array of ints (labels) L (group col) - Only if :param:label_name is not None
+        3. array of string (features name)
+        L[i] is the label associated with the features from F[i]
+        """
         with open(data_path) as data:
             all_data, features_names = FeaturesExtractor.get_raw_data(data)
 
@@ -54,6 +70,7 @@ class FeaturesExtractor:
 
             return data, features_names
 
+    # Util methods
     @staticmethod
     def remove_col_of_name(data, features_names, col_name):
         indices_to_keep = list(range(data.shape[1]))

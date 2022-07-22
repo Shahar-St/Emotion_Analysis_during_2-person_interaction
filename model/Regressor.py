@@ -20,6 +20,17 @@ class Regressor:
         self.y_test = None
 
     def train(self, features, labels, features_names, model_name, label_name='TEST', show_plots=True, out_dir='output'):
+        """
+        Train the model in 5-fold, output logs and plots
+        :param features: 2d array of features
+        :param labels: array of labels
+        :param features_names: array of features name
+        :param model_name: will be used to save the model
+        :param label_name: name of the label, will be used in plots
+        :param show_plots: if False, saves the plots
+        :param out_dir: location to write logs, model file and plots
+        :return:
+        """
         out_path = os.path.join(os.getcwd(), out_dir)
         log_file_name = f'{model_name}_logs.txt'
         log_file_path = os.path.join(out_path, log_file_name)

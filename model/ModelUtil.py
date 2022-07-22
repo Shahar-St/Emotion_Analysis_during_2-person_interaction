@@ -11,6 +11,13 @@ class ModelUtil:
 
     @staticmethod
     def tune_hyper_params(model, parameters_to_tune, features, labels):
+        """
+        :param model: Regressor or Classifier
+        :param parameters_to_tune: dict of: params to tune => list of values to check
+        :param features: 2d array of features
+        :param labels: array of labels
+        :return: best model found
+        """
         grid_search = GridSearchCV(model, parameters_to_tune, n_jobs=5, cv=5, verbose=1)
         grid_search.fit(features, labels)
 
@@ -30,10 +37,10 @@ class ModelUtil:
         return grid_search.best_estimator_
 
     @staticmethod
-    def plot_test_vs_error(test_sorted, errors_sorted, label_name, output_dir=None):
+    def plot_test_vs_error(y_test, errors, label_name, output_dir=None):
         title = f'{label_name} Score vs test absolute errors'
         plt.title(title)
-        plt.scatter(test_sorted, errors_sorted)
+        plt.scatter(y_test, errors)
         plt.xlabel(f'{label_name} Score')
         plt.ylabel('Error')
         if output_dir is None:
@@ -46,6 +53,14 @@ class ModelUtil:
 
     @staticmethod
     def plot_importance_top_k(model, features_names, num_of_features, output_dir=None, top=True):
+        """
+        Plots the top/bottom k features of the model
+        :param model: Regressor or Classifier
+        :param features_names: Array of features names
+        :param num_of_features: How many features to plot
+        :param output_dir: if None, shows the plot, else save it in the dir
+        :param top: if True, plots the top k, else, plots the bottom k
+        """
         importance = model.feature_importances_
         if top is True:
             indices = np.argsort(importance)[-num_of_features:]
